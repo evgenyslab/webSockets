@@ -1,10 +1,9 @@
-#include <uWServer_b.h>
+#include <uWServer.h>
 #include <thread>
 #include <iostream>
 #include <random>
 #include <msgpack.hpp>
-#include <fstream>
-#include <iterator>
+
 
 /* Try with new single
  * TODO: need to speed test this somehow
@@ -33,7 +32,7 @@ std::string randomString(std::size_t length)
 
 int main(){
 
-    uWServer_b server(8890);
+    uWServer server(8890);
     server.run();
 
     msgpack::sbuffer streamBuffer;  // stream buffer

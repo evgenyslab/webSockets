@@ -34,28 +34,32 @@ file(GLOB UWS_SOURCES
         )
 
 file(GLOB cppUWS_SOURCES
-        "src/*.c*"
+        "src/*.c"
         )
 
 file(GLOB UWS_COMBINED
         "external/uWebSockets/src/*.c*"
-        "src/*.c*"
+        "src/*.c"
         )
 
 file(GLOB UWS_HEADERS
-        "include/*.h*"
+        "include/*.h"
         )
+
+MESSAGE(${UWS_HEADERS})
 
 #file(GLOB OPENCV_LIBS
 #        "/usr/local/Cellar/opencv/4.2.0_1/lib/*.dylib"
 #        )
 
 # this is only uWebSocket library
-add_library(uwserver STATIC ${UWS_COMBINED} include/uWServer_b.h)
+add_library(uwserver STATIC ${UWS_COMBINED} include/uWServer.h)
 
 add_executable(message_server examples/message_server.cpp ${UWS_SOURCES} ${UWS_HEADERS})
 # Make sure YourLib is linked to each app
 target_link_libraries(message_server crypto z uv ssl pthread)
+
+
 
 IF(WITH_EXAMPLES)
     MESSAGE("Compiling with Examples")
