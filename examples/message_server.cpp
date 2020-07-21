@@ -66,7 +66,9 @@ int main(){
             for (int k =0;k<100;k++){
                 // time from here:
                 auto ta = now();
-                server._send(streamBuffer.data(), streamBuffer.size()); // streamsize isnt correct yet...
+                std::string msg(streamBuffer.data());
+                server.sendStringAsBinary(msg);
+//                server._send(streamBuffer.data(), streamBuffer.size()); // streamsize isnt correct yet...
                 // now to read...
                 std::string ret;
                 server.read_blocking(ret);
@@ -86,7 +88,9 @@ int main(){
             packer.pack_map(1);
             packer.pack("message");
             packer.pack(cmd);
-            server._send(streamBuffer.data(), streamBuffer.size()); // streamsize isnt correct yet...
+            std::string msg(streamBuffer.data());
+            server.sendStringAsBinary(msg);
+//            server._send(streamBuffer.data(), streamBuffer.size()); // streamsize isnt correct yet...
 
         }
     }

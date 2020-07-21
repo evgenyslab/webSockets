@@ -10,15 +10,9 @@ include_directories(
         /usr/local/include
         external/msgpack/include
         external/uWebSockets/src
-#        /usr/local/Cellar/opencv/4.2.0_1/include/opencv4
 )
 
 link_directories(/usr/local/lib)
-#link_directories(/usr/local/Cellar/opencv/4.2.0_1/lib)
-
-#FIND_PACKAGE(opencv)
-#
-#MESSAGE(${OPENCV_ROOT})
 
 # macOS only:
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -33,14 +27,6 @@ file(GLOB UWS_SOURCES
         "external/uWebSockets/src/*.c*"
         )
 
-file(GLOB cppUWS_SOURCES
-        "src/*.c"
-        )
-
-file(GLOB UWS_COMBINED
-        "external/uWebSockets/src/*.c*"
-        "src/*.c"
-        )
 
 file(GLOB UWS_HEADERS
         "include/*.h"
@@ -48,12 +34,9 @@ file(GLOB UWS_HEADERS
 
 MESSAGE(${UWS_HEADERS})
 
-#file(GLOB OPENCV_LIBS
-#        "/usr/local/Cellar/opencv/4.2.0_1/lib/*.dylib"
-#        )
 
 # this is only uWebSocket library
-add_library(uwserver STATIC ${UWS_COMBINED} include/uWServer.h)
+add_library(uwserver STATIC ${UWS_SOURCES} include/uWServer.h)
 
 add_executable(message_server examples/message_server.cpp ${UWS_SOURCES} ${UWS_HEADERS})
 # Make sure YourLib is linked to each app

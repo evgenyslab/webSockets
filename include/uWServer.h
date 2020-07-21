@@ -108,16 +108,46 @@ public:
     void stop(){
         pthread_kill(this->_tid, 0);
     };
-    // send message
-    void _send(char * cmsg, size_t l, bool BINARY = true){
-        std::string msg(cmsg,l);
-        if (BINARY){
-            for (auto c:this->connections)
-                c->send(msg.c_str(),msg.size(),OpCode::BINARY);
-        }else{
-            for (auto c:this->connections)
-                c->send(msg.c_str(),msg.size(),OpCode::TEXT);
+
+    void sendStringAsBinary(const std::string &msg){
+        for (auto c:this->connections)
+            c->send(msg.c_str(),msg.size(),OpCode::BINARY);
+    }
+
+    void sendStringAsText(const std::string &msg){
+        for (auto c:this->connections)
+            c->send(msg.c_str(),msg.size(),OpCode::TEXT);
+    }
+
+
+    std::string readBlocking(){
+        bool received = false;
+        std::string ret;
+        while(!received){
+            // lock queue
+            pthread_mutex_lock(&this->_rxmutex);
+            if(!this->rxqueue.empty()){
+                ret = this->rxqueue.front();
+                this->rxqueue.pop_front();
+                received = true;
+            }
+            pthread_mutex_unlock(&this->_rxmutex);
+            if(!received)
+                std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
+        return ret;
+    }
+
+    std::string readNonBlocking(){
+        std::string ret;
+        // lock queue
+        pthread_mutex_lock(&this->_rxmutex);
+        if(!this->rxqueue.empty()){
+            ret = this->rxqueue.front();
+            this->rxqueue.pop_front();
+        }
+        pthread_mutex_unlock(&this->_rxmutex);
+        return ret;
     }
 
     // blocking reads message from queue
