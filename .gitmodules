@@ -1,0 +1,9 @@
+[submodule "external/uWebSockets"]
+	path = external/uWebSockets
+	url = https://github.com/uNetworking/uWebSockets.git
+[submodule "external/msgpack"]
+	path = external/msgpack
+	url = https://github.com/msgpack/msgpack-c.git
+[submodule "external/json"]
+	path = external/json
+	url = https://github.com/nlohmann/json.git
