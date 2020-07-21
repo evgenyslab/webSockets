@@ -44,8 +44,8 @@ private:
         uWS::Hub h;
 
         h.onConnection([this](uWS::WebSocket<uWS::SERVER>* ws, uWS::HttpRequest req) {
-           std::cout << "A client connected" << std::endl;
-           printf("%s\n",req.headers->value);
+//           std::cout << "A client connected" << std::endl;
+//           printf("%s\n",req.headers->value);
            // seems like theres a new pointer per connected client; need to manage this better.
            pthread_mutex_lock(&this->_lock);
            this->connections.emplace_back(ws);
@@ -55,7 +55,7 @@ private:
         );
 
         h.onDisconnection([this](uWS::WebSocket<uWS::SERVER>* ws, int code, char *message, size_t length) {
-            std::cout << "CLIENT CLOSE: " << code << std::endl;
+//            std::cout << "CLIENT CLOSE: " << code << std::endl;
             std::vector<uWS::WebSocket<uWS::SERVER>*>::iterator it;
             it = find (this->connections.begin(), this->connections.end(), ws);
             if (it != connections.end()){
@@ -65,13 +65,13 @@ private:
                 // set connection state based on how many connected clients there are:
                 this->connected = !this->connections.empty();
                 pthread_mutex_unlock(&this->_lock);
-                printf("Client removed!\n");
+//                printf("Client removed!\n");
                 if (this->connections.empty()){
-                    printf("All Clients disconnected!\n");
+//                    printf("All Clients disconnected!\n");
                 }
             }else{
                 // this should be an error...
-                printf("client NOT found in array\n");
+//                printf("client NOT found in array\n");
             }
         });
 
@@ -85,7 +85,7 @@ private:
         });
 
         if (h.listen("0.0.0.0",this->port)) {
-            printf("Server listening on port: %d\n", this->port);
+//            printf("Server listening on port: %d\n", this->port);
             // add async to server hub to correctly handle asynchronous sending...
             h.getDefaultGroup<uWS::SERVER>().addAsync();
             h.run();

@@ -2,9 +2,9 @@
 from libcpp.string cimport string
 
 # mirror class header declarations here
-cdef extern from "uWServer.h" namespace "uWS":
+cdef extern from "uWServer.h":
     cdef cppclass uWServer:
-        uWServer() except +
+        uWServer(int) except +
 
         void config();
         void run();
@@ -18,13 +18,13 @@ cdef extern from "uWServer.h" namespace "uWS":
 
 
 # define python class that will be called thorugh import myClass.PymyClass:
-cdef class pyuWServer:
+cdef class Server:
     # reference c-class
     cdef uWServer *thisptr
     # create python interfaces for each C++ function member.
     # CAN add python processing here if need be!
-    def __cinit__(self):
-        self.thisptr = new uWServer()
+    def __cinit__(self, port=8890):
+        self.thisptr = new uWServer(port)
     def __dealloc__(self):
         del self.thisptr
     def config(self):
