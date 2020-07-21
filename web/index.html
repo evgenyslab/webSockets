@@ -1,0 +1,122 @@
+<html>
+<header><title>This is title</title></header>
+<body>
+<div id="hero"><p>Hello world</p></div>
+<div id="buttons">
+    <button type="button" id="sendJSON" onclick="sendJSON()">SNED</button>
+</div>
+<div id="websocketConnect">
+    <input id="websocketConnectPort" value="enter socket port">
+    <!--    <button id="myBtn" onclick="javascript:alert('Hello World!')">Button</button>-->
+    <button type="button" id="socketConnect" onclick="connectToSocket()">Connect</button>
+</div>
+<div id="button_panel">
+    <input id="myInput" value="Type your input here..">
+<!--    <button id="myBtn" onclick="javascript:alert('Hello World!')">Button</button>-->
+    <button type="button" id="myBtn" onclick="myFunction()">Try it</button>
+</div>
+<div>
+    <img id="ItemPreview" src="">
+</div>
+
+<p><img src="http://localhost:7777"></img></p>
+<div id="content">Message Received: </div>
+<div id="epoch">Server time: </div>
+
+
+<img id="image"/>
+<div id="imageBytes"></div>
+</body>
+</html>
+
+<script>
+
+    var ws = new WebSocket("ws://127.0.0.1:13049");
+    var connected = false;
+    var myobj = {
+        field0: 20,
+        field2: "blah",
+        field3: 14.6,
+        field5: null,
+    };
+
+    ws.onopen = function(event) {
+        console.log("Connected");
+        connected = true;
+    };
+
+    ws.onclose = function(event){
+      connected = false;
+    };
+
+    ws.onmessage = function(event){
+        // if a byte stream is received...
+        if (typeof(event.data)=="object"){
+            // byte stream, this seems to work with read jpgs without any other processing
+            // why does this work?
+            // ONLY WORKS WITH JPEG ENCODED IMAGES!
+            // this should work with JPEGS
+            // Maybe need to use this:
+                    // Make a Blob from the bytes
+                    // var blob = new Blob([bytes], {type: 'image/bmp'});
+                    //
+                    // // Use createObjectURL to make a URL for the blob
+                    // var image = new Image();
+                    // image.src = URL.createObjectURL(blob);
+            // might be able to use msgpack for this too and encode on c++ side, decode here...
+            var data = event.data;
+            // var blob = new Blob(event.data.arrayBuffer(), {type: "image/png"});
+            var imageUrl = URL.createObjectURL(data);
+            document.querySelector("#image").src = imageUrl;
+        }else{
+            // string msg is received, might as well be a json dict....
+            console.log("message received");
+            var msg = JSON.parse(event.data);
+            console.log(msg);
+            if (msg["message"] !== undefined){
+                console.log(msg.message);
+                document.getElementById("content").innerHTML = "message Received: " + msg.message;
+            }
+            if (msg["epoch"] !== undefined){
+                document.getElementById("epoch").innerHTML = "Server time: " + msg.epoch;
+            }
+            if (msg["image"] !== undefined){
+                var imageUrl = URL.createObjectURL(msg["image"]);
+                document.querySelector("#image").src = imageUrl;
+            }
+        }
+
+
+    };
+
+    function sendJSON(){
+        if (connected){
+            var sstring = JSON.stringify(myobj);
+            ws.send(sstring);
+        }
+    }
+
+    function myFunction(){
+        console.log("button clicked");
+        if (connected){
+            ws.send("the button was clicked");
+        }
+    }
+
+    // communication textbox
+    var input = document.getElementById("myInput");
+    input.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            // do something with data
+            console.log(input.value);
+            if (connected){
+                ws.send(input.value);
+            }
+            input.value = "";
+            // document.getElementById("myBtn").click();
+        }
+    });
+
+
+</script>
