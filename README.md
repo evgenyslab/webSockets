@@ -15,3 +15,12 @@ cd ..
 rm -rf webSockets
 
 ```
+
+## TODO List:
+
+- [ ] client c++ cleanup
+- [ ] server c++ cleanup
+- [ ] client python wrap
+- [ ] c++ tests
+- [ ] python tests
+- [ ] example cleanup

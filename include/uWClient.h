@@ -54,16 +54,16 @@ private:
         // problems when server connects
 
         h.onConnection([this](uWS::WebSocket<uWS::CLIENT>* ws, uWS::HttpRequest req) {
-           std::cout << "Client connected to Server on port: " << this->port << std::endl;
+//           std::cout << "Client connected to Server on port: " << this->port << std::endl;
            // seems like theres a new pointer per connected client; need to manage this better.
-            printf("%s\n",req.headers->value);
+//            printf("%s\n",req.headers->value);
            this->connected = true;
            this->client = ws;
            }
         );
 
         h.onDisconnection([this](uWS::WebSocket<uWS::CLIENT>* ws, int code, char *message, size_t length) {
-            std::cout << "CLIENT Disconnected from Server with code: " << code << std::endl;
+//            std::cout << "CLIENT Disconnected from Server with code: " << code << std::endl;
             this->connected = false;
         });
 
@@ -116,19 +116,29 @@ public:
         pthread_kill(this->_tid, 0);
     };
 
+    bool isConnected(){
+        return this->connected;
+    }
+
+    bool hasMessages(){
+        return !this->rxqueue.empty();
+    }
+
     // send message
-    void _send(char * cmsg, size_t l, bool BINARY = true){
-        std::string msg(cmsg,l);
-        if (BINARY){
-            this->client->send(msg.c_str(),msg.size(),OpCode::BINARY);
-        }else{
-            this->client->send(msg.c_str(),msg.size(),OpCode::TEXT);
-        }
+    void sendStringAsBinary(const std::string &msg){
+        this->client->send(msg.c_str(),msg.size(),OpCode::BINARY);
+    }
+
+    void sendStringAsText(const std::string &msg){
+        this->client->send(msg.c_str(),msg.size(),OpCode::TEXT);
     }
 
     // blocking reads message from queue
-    void read_blocking(std::string &ret){
+    std::string readBlocking(){
+        if (!this->isConnected())
+            return "";
         bool received = false;
+        std::string ret;
         while(!received){
             // lock queue
             pthread_mutex_lock(&this->_rxmutex);
@@ -141,11 +151,13 @@ public:
             if(!received)
                 std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
-
-
+        return ret;
     };
     // reads message from queue
-    void read(std::string &ret){
+    std::string readNonBlocking(){
+        if (!this->isConnected())
+            return "";
+        std::string ret;
         // lock queue
         pthread_mutex_lock(&this->_rxmutex);
         if(!this->rxqueue.empty()){
@@ -153,17 +165,18 @@ public:
             this->rxqueue.pop_front();
         }
         pthread_mutex_unlock(&this->_rxmutex);
+        return ret;
     };
-    // reads all message from queue
-    void read(std::vector<std::string> &ret){
-        // lock queue
-        pthread_mutex_lock(&this->_rxmutex);
-        while(!this->rxqueue.empty()){
-            std::string r;
-            this->read(r);
-            ret.emplace_back(r);
-            this->rxqueue.pop_front();
-        }
-        pthread_mutex_unlock(&this->_rxmutex);
-    };
+//    // reads all message from queue
+//    void read(std::vector<std::string> &ret){
+//        // lock queue
+//        pthread_mutex_lock(&this->_rxmutex);
+//        while(!this->rxqueue.empty()){
+//            std::string r;
+//            this->read(r);
+//            ret.emplace_back(r);
+//            this->rxqueue.pop_front();
+//        }
+//        pthread_mutex_unlock(&this->_rxmutex);
+//    };
 };

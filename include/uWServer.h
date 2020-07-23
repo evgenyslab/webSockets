@@ -119,8 +119,17 @@ public:
             c->send(msg.c_str(),msg.size(),OpCode::TEXT);
     }
 
+    bool isConnected(){
+        return this->connected;
+    }
+
+    bool hasMessages(){
+        return !this->rxqueue.empty();
+    }
 
     std::string readBlocking(){
+        if (!this->isConnected())
+            return "";
         bool received = false;
         std::string ret;
         while(!received){
@@ -139,6 +148,8 @@ public:
     }
 
     std::string readNonBlocking(){
+        if (!this->isConnected())
+            return "";
         std::string ret;
         // lock queue
         pthread_mutex_lock(&this->_rxmutex);
@@ -170,6 +181,7 @@ public:
     };
     // reads message from queue
     void read(std::string &ret){
+
         // lock queue
         pthread_mutex_lock(&this->_rxmutex);
         if(!this->rxqueue.empty()){
