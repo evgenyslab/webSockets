@@ -32,6 +32,9 @@ int main(){
             std::string ret = server.readBlocking();
             std::cout << "Read from client buffer: " << ret << "\n";
         }
+        else if (cmd.substr(0,4)=="ping"){
+            server.pingAllClients();
+        }
     }
 
     return 0;

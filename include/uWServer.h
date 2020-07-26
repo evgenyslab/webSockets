@@ -7,7 +7,7 @@
  *
  * */
 
-#include <uWS.h>
+#include <uWGroup.h>
 #include <thread>
 #include <deque>
 #include <iostream>
@@ -16,21 +16,22 @@
 
 using namespace uWS;
 
-class uWServer{
+class uWServer : public uWGroup{
 private:
     // run thread
-    pthread_t _tid;
-    // received queue
-    std::deque<std::string> rxqueue;
-    pthread_mutex_t _rxmutex = PTHREAD_MUTEX_INITIALIZER;
+//    pthread_t _tid;
+//    // received queue
+//    std::deque<std::string> rxqueue;
+//    pthread_mutex_t _rxmutex = PTHREAD_MUTEX_INITIALIZER;
     // client lock:
     pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
     // connection list:
     std::vector<uWS::WebSocket<uWS::SERVER>* > connections = {};
     // port
-    int port = 0;
-    //
-    bool connected = false;
+//    int port = 0;
+//    //
+//    bool connected = false;
+
 
     // functions:
     // helper function
@@ -75,6 +76,10 @@ private:
             }
         });
 
+        h.onPing([](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length) {
+            std::cout << "PING RECEIVED" << std::endl;
+        });
+
 
         h.onMessage([this](uWS::WebSocket<uWS::SERVER>* ws, char *message, size_t length, uWS::OpCode opCode){
             // lock queue
@@ -95,7 +100,9 @@ private:
 
 public:
 
-    uWServer(int port): port(port){};
+    uWServer(int port){
+        this->port = port;
+    };
     ~uWServer() = default;
 
     void config(){
@@ -119,47 +126,52 @@ public:
             c->send(msg.c_str(),msg.size(),OpCode::TEXT);
     }
 
-    bool isConnected(){
-        return this->connected;
+    void pingAllClients(){
+        for (auto c:this->connections)
+            c->ping("ping-from-server");
     }
 
-    bool hasMessages(){
-        return !this->rxqueue.empty();
-    }
-
-    std::string readBlocking(){
-        if (!this->isConnected())
-            return "";
-        bool received = false;
-        std::string ret;
-        while(!received){
-            // lock queue
-            pthread_mutex_lock(&this->_rxmutex);
-            if(!this->rxqueue.empty()){
-                ret = this->rxqueue.front();
-                this->rxqueue.pop_front();
-                received = true;
-            }
-            pthread_mutex_unlock(&this->_rxmutex);
-            if(!received)
-                std::this_thread::sleep_for(std::chrono::milliseconds(2));
-        }
-        return ret;
-    }
-
-    std::string readNonBlocking(){
-        if (!this->isConnected())
-            return "";
-        std::string ret;
-        // lock queue
-        pthread_mutex_lock(&this->_rxmutex);
-        if(!this->rxqueue.empty()){
-            ret = this->rxqueue.front();
-            this->rxqueue.pop_front();
-        }
-        pthread_mutex_unlock(&this->_rxmutex);
-        return ret;
-    }
+//    bool isConnected(){
+//        return this->connected;
+//    }
+//
+//    bool hasMessages(){
+//        return !this->rxqueue.empty();
+//    }
+//
+//    std::string readBlocking(){
+//        if (!this->isConnected())
+//            return "";
+//        bool received = false;
+//        std::string ret;
+//        while(!received){
+//            // lock queue
+//            pthread_mutex_lock(&this->_rxmutex);
+//            if(!this->rxqueue.empty()){
+//                ret = this->rxqueue.front();
+//                this->rxqueue.pop_front();
+//                received = true;
+//            }
+//            pthread_mutex_unlock(&this->_rxmutex);
+//            if(!received)
+//                std::this_thread::sleep_for(std::chrono::milliseconds(2));
+//        }
+//        return ret;
+//    }
+//
+//    std::string readNonBlocking(){
+//        if (!this->isConnected())
+//            return "";
+//        std::string ret;
+//        // lock queue
+//        pthread_mutex_lock(&this->_rxmutex);
+//        if(!this->rxqueue.empty()){
+//            ret = this->rxqueue.front();
+//            this->rxqueue.pop_front();
+//        }
+//        pthread_mutex_unlock(&this->_rxmutex);
+//        return ret;
+//    }
     // TODO: add read all as std::vector<std::string>
 
 };
