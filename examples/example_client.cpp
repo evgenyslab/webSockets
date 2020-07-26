@@ -1,43 +1,38 @@
 #include <uWClient.h>
-#include <thread>
 #include <iostream>
-#include <random>
 
-/* Try with new single
- * TODO: need to speed test this somehow
- * */
-
-std::string randomString(std::size_t length)
-{
-    std::random_device random_device;
-    std::mt19937 generator(random_device());
-    std::uniform_int_distribution<int> distribution(0,255);
-
-    std::string random_string;
-
-    for (std::size_t i = 0; i < length; ++i)
-    {
-        random_string += (char) distribution(generator);
-
-    }
-
-    return random_string;
-}
 
 int main(){
 
-    uWClient_b client(13049);
+
+    std::cout << "CLIENT APPLICATION\n\n";
+    uWClient client(13049);
     client.run();
+    // wait for connection..
+    while (!client.isConnected())
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    std::cout << "Client connected to server!\n";
 
     bool exit = false;
     // wait for a moment while uwebsockets starts...
     while(!exit) {
-        // read from client
-        std::string msg;
-        client.read_blocking(msg);
-        printf("Message received on server, size: %ld bytes\n", msg.size());
-        if (msg.size()<60)
-            printf("Content: %s\n", msg.c_str());
+        printf(">> ");
+        std::string cmd;
+        std::getline(std::cin, cmd);
+        if (cmd == "exit")
+            exit = true;
+        else if (cmd.substr(0,4)=="send"){
+            client.sendStringAsText(cmd.substr(4,cmd.size()-1));
+        }
+        else if (cmd.substr(0,4)=="read"){
+            std::string ret = client.readNonBlocking();
+            std::cout << "Read from client buffer: " << ret << "\n";
+        }
+        else if (cmd.substr(0,5)=="bread"){
+            std::string ret = client.readBlocking();
+            std::cout << "Read from client buffer: " << ret << "\n";
+        }
     }
 
     return 0;
