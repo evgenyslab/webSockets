@@ -2,6 +2,15 @@
 
 *Project is split from [here](https://github.com/evgenyslab/Sockets/tree/v0.0.0)*
 
+## Prereqs
+
+```bash
+sudo apt-get install \
+    zlib1g-dev \
+    libssl-dev \
+    libuv-dev 
+
+```
 
 ## Install
 
@@ -24,3 +33,4 @@ rm -rf webSockets
 - [ ] c++ tests
 - [ ] python tests
 - [ ] example cleanup
+- [ ] why does python call to readNonBlocking block? something about mutex?
