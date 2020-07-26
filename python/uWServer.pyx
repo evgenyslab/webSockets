@@ -57,6 +57,8 @@ cdef class Server:
         self.thisptr.sendStringAsBinary(msg)
     def readBlocking(self):
         return self.thisptr.readBlocking()
+    def readNonBlocking(self):
+        return self.thisptr.readNonBlocking()
     def isConnected(self):
         return self.thisptr.isConnected()
     def hasMessages(self):
@@ -81,6 +83,8 @@ cdef class Client:
         self.thisptr.sendStringAsBinary(msg)
     def readBlocking(self):
         return self.thisptr.readBlocking()
+    def readNonBlocking(self):
+        return self.thisptr.readNonBlocking()
     def isConnected(self):
         return self.thisptr.isConnected()
     def hasMessages(self):

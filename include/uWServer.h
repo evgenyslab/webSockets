@@ -160,47 +160,6 @@ public:
         pthread_mutex_unlock(&this->_rxmutex);
         return ret;
     }
-
-    // blocking reads message from queue
-    void read_blocking(std::string &ret){
-        bool received = false;
-        while(!received){
-            // lock queue
-            pthread_mutex_lock(&this->_rxmutex);
-            if(!this->rxqueue.empty()){
-                ret = this->rxqueue.front();
-                this->rxqueue.pop_front();
-                received = true;
-            }
-            pthread_mutex_unlock(&this->_rxmutex);
-            if(!received)
-                std::this_thread::sleep_for(std::chrono::milliseconds(2));
-        }
-
-
-    };
-    // reads message from queue
-    void read(std::string &ret){
-
-        // lock queue
-        pthread_mutex_lock(&this->_rxmutex);
-        if(!this->rxqueue.empty()){
-            ret = this->rxqueue.front();
-            this->rxqueue.pop_front();
-            }
-        pthread_mutex_unlock(&this->_rxmutex);
-    };
-    // reads all message from queue
-    void read(std::vector<std::string> &ret){
-        // lock queue
-        pthread_mutex_lock(&this->_rxmutex);
-        while(!this->rxqueue.empty()){
-            std::string r;
-            this->read(r);
-            ret.emplace_back(r);
-            this->rxqueue.pop_front();
-        }
-        pthread_mutex_unlock(&this->_rxmutex);
-    };
+    // TODO: add read all as std::vector<std::string>
 
 };

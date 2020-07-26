@@ -81,6 +81,7 @@ private:
         h.connect("ws://127.0.0.1:" + std::to_string(this->port), (void *) 1);
         h.run(); // <- blocking call
 
+
     }
 
     void _hallMonitor(){
@@ -114,6 +115,7 @@ public:
     };
     void stop(){
         pthread_kill(this->_tid, 0);
+        pthread_kill(this->_tih,0);
     };
 
     bool isConnected(){
@@ -167,16 +169,5 @@ public:
         pthread_mutex_unlock(&this->_rxmutex);
         return ret;
     };
-//    // reads all message from queue
-//    void read(std::vector<std::string> &ret){
-//        // lock queue
-//        pthread_mutex_lock(&this->_rxmutex);
-//        while(!this->rxqueue.empty()){
-//            std::string r;
-//            this->read(r);
-//            ret.emplace_back(r);
-//            this->rxqueue.pop_front();
-//        }
-//        pthread_mutex_unlock(&this->_rxmutex);
-//    };
+    //TODO: add readAll
 };
