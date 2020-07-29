@@ -32,8 +32,7 @@ rm -rf webSockets
 called within an `onMessage` call back under specific conditions...
 - [ ] client c++ cleanup
 - [ ] server c++ cleanup
-- [ ] client python wrap
 - [ ] c++ tests
 - [ ] python tests
 - [ ] example cleanup
-- [ ] why does python call to readNonBlocking block? something about mutex?
+gi
