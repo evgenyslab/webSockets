@@ -11,6 +11,8 @@ cdef extern from "uWServer.h":
         void run();
         void stop();
 
+        void ping();
+
         void sendStringAsBinary(string);
         void sendStringAsText(string);
 
@@ -27,6 +29,8 @@ cdef extern from "uWClient.h":
         void config();
         void run();
         void stop();
+
+        void ping();
 
         void sendStringAsBinary(string);
         void sendStringAsText(string);
@@ -53,6 +57,8 @@ cdef class Server:
         self.thisptr.run()
     def stop(self):
         self.thisptr.stop()
+    def ping(self):
+        self.thisptr.ping()
     def sendStringAsBinary(self, msg):
         self.thisptr.sendStringAsBinary(msg)
     def readBlocking(self):
@@ -79,6 +85,8 @@ cdef class Client:
         self.thisptr.run()
     def stop(self):
         self.thisptr.stop()
+    def ping(self):
+        self.thisptr.ping()
     def sendStringAsBinary(self, msg):
         self.thisptr.sendStringAsBinary(msg)
     def readBlocking(self):

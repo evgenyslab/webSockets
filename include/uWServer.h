@@ -139,7 +139,7 @@ public:
             c->send(msg.c_str(),msg.size(),OpCode::TEXT);
     }
 
-    void pingAllClients(){
+    void ping(){
         for (auto c:this->connections){
             c->ping("ping-from-server");
             this->pingTimer[c] = now();

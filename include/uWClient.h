@@ -120,7 +120,7 @@ public:
         pthread_kill(this->_tih,0);
     };
 
-    void pingServer(){
+    void ping(){
         if(this->isConnected()){
             this->pingTravelTime = now();
             this->client->ping("ping-from-client");

@@ -83,4 +83,6 @@ public:
     virtual void sendStringAsBinary(const std::string &msg) = 0;
     virtual void sendStringAsText(const std::string &msg) = 0;
 
+    virtual void ping() = 0;
+
 };
