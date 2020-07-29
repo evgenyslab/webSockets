@@ -27,6 +27,9 @@ rm -rf webSockets
 
 ## TODO List:
 
+- [ ] implement syslog
+- [ ] how to implement clean close within uws app? seems like `h.getDefaultGroup<uWS::SERVER>().close();` is 
+called within an `onMessage` call back under specific conditions...
 - [ ] client c++ cleanup
 - [ ] server c++ cleanup
 - [ ] client python wrap

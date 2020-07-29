@@ -22,13 +22,24 @@ protected:
 
     // port
     int port = 0;
+    // host:
+    std::string host;
     //
     bool connected = false;
+
+    uint64_t now(){
+        return (std::chrono::duration_cast<std::chrono::nanoseconds >(std::chrono::system_clock::now().time_since_epoch())).count();
+    }
 
 public:
 
     bool isConnected(){
         return this->connected;
+    }
+
+    void waitForConnection(){
+        while(!this->isConnected())
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
     bool hasMessages(){
@@ -68,5 +79,8 @@ public:
         pthread_mutex_unlock(&this->_rxmutex);
         return ret;
     }
+
+    virtual void sendStringAsBinary(const std::string &msg) = 0;
+    virtual void sendStringAsText(const std::string &msg) = 0;
 
 };

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(websockets_testing)
+project(webSockets)
 add_compile_options(-std=c++11)
 
-
+SET(WITH_EXAMPLES TRUE)
 
 include_directories(
         include

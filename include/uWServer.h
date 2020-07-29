@@ -8,29 +8,27 @@
  * */
 
 #include <uWGroup.h>
-#include <thread>
-#include <deque>
-#include <iostream>
 
 #define MAX_MESSAGE_QUEUE 100
 
+
 using namespace uWS;
+
+
+typedef std::vector<uWS::WebSocket<uWS::SERVER>* > connectionList;
+typedef std::vector<uWS::WebSocket<uWS::SERVER>*>::iterator connnectionListIterator;
+typedef std::map<uWS::WebSocket<uWS::SERVER>*, double> connectionPingTimer;
 
 class uWServer : public uWGroup{
 private:
-    // run thread
-//    pthread_t _tid;
-//    // received queue
-//    std::deque<std::string> rxqueue;
-//    pthread_mutex_t _rxmutex = PTHREAD_MUTEX_INITIALIZER;
+
     // client lock:
     pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
     // connection list:
-    std::vector<uWS::WebSocket<uWS::SERVER>* > connections = {};
-    // port
-//    int port = 0;
-//    //
-//    bool connected = false;
+    connectionList connections = {};
+    connectionPingTimer pingTimer = {};
+
+
 
 
     // functions:
@@ -39,6 +37,11 @@ private:
         ((uWServer *) context)->_run();
         return nullptr;
     }
+
+    connnectionListIterator findConnection(uWS::WebSocket<uWS::SERVER>* ws){
+        return find (this->connections.begin(), this->connections.end(), ws);
+    }
+
     // run function:
     void _run(){
         // create hub object local to thread:
@@ -57,8 +60,9 @@ private:
 
         h.onDisconnection([this](uWS::WebSocket<uWS::SERVER>* ws, int code, char *message, size_t length) {
 //            std::cout << "CLIENT CLOSE: " << code << std::endl;
-            std::vector<uWS::WebSocket<uWS::SERVER>*>::iterator it;
-            it = find (this->connections.begin(), this->connections.end(), ws);
+            auto it = findConnection(ws);
+//            std::vector<uWS::WebSocket<uWS::SERVER>*>::iterator it;
+//            it = find (this->connections.begin(), this->connections.end(), ws);
             if (it != connections.end()){
 
                 pthread_mutex_lock(&this->_lock);
@@ -76,8 +80,15 @@ private:
             }
         });
 
-        h.onPing([](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length) {
-            std::cout << "PING RECEIVED" << std::endl;
+
+        h.onPing([this](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length) {
+//            auto timeOfFlight = (now() - this->pingTimer[ws])/1e6;
+//            std::cout << "Client response: " << timeOfFlight << "ms" << std::endl;
+        });
+
+        h.onPong([this](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length) {
+            auto timeOfFlight = (now() - this->pingTimer[ws])/1e6;
+            std::cout << "Client response: " << timeOfFlight << "ms" << std::endl;
         });
 
 
@@ -89,7 +100,7 @@ private:
             pthread_mutex_unlock(&this->_rxmutex);
         });
 
-        if (h.listen("0.0.0.0",this->port)) {
+        if (h.listen(this->host.c_str(),this->port)) {
 //            printf("Server listening on port: %d\n", this->port);
             // add async to server hub to correctly handle asynchronous sending...
             h.getDefaultGroup<uWS::SERVER>().addAsync();
@@ -102,6 +113,7 @@ public:
 
     uWServer(int port){
         this->port = port;
+        this->host = "0.0.0.0";
     };
     ~uWServer() = default;
 
@@ -112,6 +124,7 @@ public:
     void run(){
         pthread_create(&this->_tid, nullptr, this->__run__, this);
     };
+
     void stop(){
         pthread_kill(this->_tid, 0);
     };
@@ -127,51 +140,11 @@ public:
     }
 
     void pingAllClients(){
-        for (auto c:this->connections)
+        for (auto c:this->connections){
             c->ping("ping-from-server");
+            this->pingTimer[c] = now();
+        }
     }
 
-//    bool isConnected(){
-//        return this->connected;
-//    }
-//
-//    bool hasMessages(){
-//        return !this->rxqueue.empty();
-//    }
-//
-//    std::string readBlocking(){
-//        if (!this->isConnected())
-//            return "";
-//        bool received = false;
-//        std::string ret;
-//        while(!received){
-//            // lock queue
-//            pthread_mutex_lock(&this->_rxmutex);
-//            if(!this->rxqueue.empty()){
-//                ret = this->rxqueue.front();
-//                this->rxqueue.pop_front();
-//                received = true;
-//            }
-//            pthread_mutex_unlock(&this->_rxmutex);
-//            if(!received)
-//                std::this_thread::sleep_for(std::chrono::milliseconds(2));
-//        }
-//        return ret;
-//    }
-//
-//    std::string readNonBlocking(){
-//        if (!this->isConnected())
-//            return "";
-//        std::string ret;
-//        // lock queue
-//        pthread_mutex_lock(&this->_rxmutex);
-//        if(!this->rxqueue.empty()){
-//            ret = this->rxqueue.front();
-//            this->rxqueue.pop_front();
-//        }
-//        pthread_mutex_unlock(&this->_rxmutex);
-//        return ret;
-//    }
-    // TODO: add read all as std::vector<std::string>
 
 };

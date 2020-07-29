@@ -8,9 +8,7 @@
  * */
 
 #include <uWGroup.h>
-#include <thread>
-#include <deque>
-#include <iostream>
+
 
 #define MAX_MESSAGE_QUEUE 100
 
@@ -20,16 +18,9 @@ class uWClient : public uWGroup{
 private:
     // run thread
     pthread_t  _tih;
-    // received queue
-//    std::deque<std::string> rxqueue;
-//    pthread_mutex_t _rxmutex = PTHREAD_MUTEX_INITIALIZER;
-    // send queue
-    std::deque<std::string> txqueue;
-    pthread_mutex_t _txmutex = PTHREAD_MUTEX_INITIALIZER;
-    // port
-//    int port = 0;
-//    //
-//    bool connected = false;
+    //
+    double pingTravelTime = 0;
+
     bool exit = false;
     // client
     uWS::WebSocket<uWS::CLIENT>* client;
@@ -62,8 +53,9 @@ private:
            }
         );
 
-        h.onPing([](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length) {
-            std::cout << "PING RECEIVED" << std::endl;
+        h.onPong([this](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length) {
+            this->pingTravelTime = this->now() - this->pingTravelTime;
+            std::cout << "Ping time: " << this->pingTravelTime/1e6 << "ms" << std::endl;
         });
 
         h.onDisconnection([this](uWS::WebSocket<uWS::CLIENT>* ws, int code, char *message, size_t length) {
@@ -82,7 +74,7 @@ private:
         });
 
         // try to connect, I suspect might need to wrap this on the whole thread...
-        h.connect("ws://127.0.0.1:" + std::to_string(this->port), (void *) 1);
+        h.connect(this->host.c_str() + std::to_string(this->port), (void *) 1);
         h.run(); // <- blocking call
 
 
@@ -107,77 +99,44 @@ public:
 
     uWClient(int port){
         this->port = port;
+        this->host = "ws://127.0.0.1:";
     };
+
     ~uWClient() = default;
 
     void config(){
 
     };
+
     // creates and runs a thread with a hub based on config
     void run(){
         pthread_create(&this->_tid, nullptr, this->__run__, this);
         // add run monitor...
         pthread_create(&this->_tih, nullptr, this->__monitor__, this);
     };
+
     void stop(){
         pthread_kill(this->_tid, 0);
         pthread_kill(this->_tih,0);
     };
 
     void pingServer(){
-        this->client->ping("ping-from-client");
+        if(this->isConnected()){
+            this->pingTravelTime = now();
+            this->client->ping("ping-from-client");
+        }
     }
 
-//    bool isConnected(){
-//        return this->connected;
-//    }
-//
-//    bool hasMessages(){
-//        return !this->rxqueue.empty();
-//    }
 
     // send message
     void sendStringAsBinary(const std::string &msg){
-        this->client->send(msg.c_str(),msg.size(),OpCode::BINARY);
+        if(this->isConnected())
+            this->client->send(msg.c_str(),msg.size(),OpCode::BINARY);
     }
 
     void sendStringAsText(const std::string &msg){
-        this->client->send(msg.c_str(),msg.size(),OpCode::TEXT);
+        if(this->isConnected())
+            this->client->send(msg.c_str(),msg.size(),OpCode::TEXT);
     }
 
-    // blocking reads message from queue
-//    std::string readBlocking(){
-//        if (!this->isConnected())
-//            return "";
-//        bool received = false;
-//        std::string ret;
-//        while(!received){
-//            // lock queue
-//            pthread_mutex_lock(&this->_rxmutex);
-//            if(!this->rxqueue.empty()){
-//                ret = this->rxqueue.front();
-//                this->rxqueue.pop_front();
-//                received = true;
-//            }
-//            pthread_mutex_unlock(&this->_rxmutex);
-//            if(!received)
-//                std::this_thread::sleep_for(std::chrono::milliseconds(2));
-//        }
-//        return ret;
-//    };
-//    // reads message from queue
-//    std::string readNonBlocking(){
-//        if (!this->isConnected())
-//            return "";
-//        std::string ret;
-//        // lock queue
-//        pthread_mutex_lock(&this->_rxmutex);
-//        if(!this->rxqueue.empty()){
-//            ret = this->rxqueue.front();
-//            this->rxqueue.pop_front();
-//        }
-//        pthread_mutex_unlock(&this->_rxmutex);
-//        return ret;
-//    };
-    //TODO: add readAll
 };
