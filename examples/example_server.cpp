@@ -33,7 +33,7 @@ int main(){
             std::cout << "Read from client buffer: " << ret << "\n";
         }
         else if (cmd.substr(0,4)=="ping"){
-            server.pingAllClients();
+            server.ping();
         }
     }
 
