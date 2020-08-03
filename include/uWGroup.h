@@ -102,6 +102,21 @@ public:
     }
 
     /**
+     * Interface for configuration
+     */
+    virtual void config() = 0;
+
+    /**
+     * Interface for running IO object
+     */
+    virtual void run() = 0 ;
+
+    /**
+     * Interface for stopping IO object
+     */
+    virtual void stop() = 0;
+
+    /**
      * Interface for sending a string object as binary array.
      * @param msg
      */

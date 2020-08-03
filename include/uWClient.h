@@ -97,18 +97,18 @@ public:
 
     ~uWClient() = default;
 
-    void config(){
+    void config() override{
 
     };
 
     // creates and runs a thread with a hub based on config
-    void run(){
+    void run() override{
         pthread_create(&this->_tid, nullptr, this->__run__, this);
         // add run monitor...
         pthread_create(&this->_tih, nullptr, this->__monitor__, this);
     };
 
-    void stop(){
+    void stop() override{
         pthread_kill(this->_tid, 0);
         pthread_kill(this->_tih,0);
     };
