@@ -1,5 +1,6 @@
+#ifndef UWGROUP_H
+#define UWGROUP_H
 
-#pragma once
 #include <uWS.h>
 #include <thread>
 #include <deque>
@@ -109,3 +110,5 @@ public:
     virtual void ping() = 0;
 
 };
+
+#endif /* UWGROUP */
