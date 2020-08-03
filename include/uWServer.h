@@ -1,11 +1,5 @@
-/*
- *
- * server
- *
- * thread -> set up + poll in cycle // runs indefinately until quit message
- * thread -> read from queue, write to queue
- *
- * */
+#ifndef UWSERVER_H
+#define UWSERVER_H
 
 #include <uWGroup.h>
 
@@ -148,3 +142,5 @@ public:
 
 
 };
+
+#endif /* UWSERVER_H */

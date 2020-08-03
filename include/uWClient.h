@@ -1,16 +1,7 @@
-/*
- *
- * server
- *
- * thread -> set up + poll in cycle // runs indefinately until quit message
- * thread -> read from queue, write to queue
- *
- * */
+#ifndef UWCLIENT_H
+#define UWCLIENT_H
 
 #include <uWGroup.h>
-
-
-#define MAX_MESSAGE_QUEUE 100
 
 using namespace uWS;
 
@@ -140,3 +131,5 @@ public:
     }
 
 };
+
+#endif /* UWCLIENT_H */
