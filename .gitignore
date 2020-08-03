@@ -34,5 +34,7 @@
 .idea/*
 cmake-build-debug/*
 build/*
+docs/doxygen/*
 
 .DS_Store
+
