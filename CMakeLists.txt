@@ -8,17 +8,14 @@ include_directories(
         include
         usr/include
         /usr/local/include
-        external/msgpack/include
         external/uWebSockets/src
 )
 
 link_directories(/usr/local/lib)
 
 
-
 # macOS only:
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    MESSAGE("TESTSTSTS")
     include_directories(/usr/local/opt/openssl/include)
     link_directories(/usr/local/opt/openssl/lib)
 
@@ -34,18 +31,12 @@ file(GLOB UWS_HEADERS
         "include/*.h"
         )
 
-MESSAGE(${UWS_HEADERS})
 
 add_subdirectory(tests)
 
 # this is only uWebSocket library
 add_library(uwserver STATIC ${UWS_SOURCES} include/uWServer.h)
 add_library(uwclient STATIC ${UWS_SOURCES} include/uWClient.h)
-
-#add_executable(message_server examples/message_server.cpp ${UWS_SOURCES} ${UWS_HEADERS})
-## Make sure YourLib is linked to each app
-#target_link_libraries(message_server crypto z uv ssl pthread)
-
 
 
 IF(WITH_EXAMPLES)
