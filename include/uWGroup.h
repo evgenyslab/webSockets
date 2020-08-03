@@ -1,7 +1,3 @@
-/* uWGroup Interface for Server and Client
- *
- *
- * */
 
 #pragma once
 #include <uWS.h>
@@ -11,32 +7,39 @@
 
 using namespace uWS;
 
+/**
+ * uWGroup Interface class for Client and Server webSocket classes.
+ * */
 class uWGroup{
 
 protected:
-    // run thread
-    pthread_t _tid;
-    // received queue
-    std::deque<std::string> rxqueue;
-    pthread_mutex_t _rxmutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_t _tid; /**< thread allocator for running uWS hub */
+    std::deque<std::string> rxqueue; /**< message receive queue */
+    pthread_mutex_t _rxmutex = PTHREAD_MUTEX_INITIALIZER; /**< message receive queue mutex */
 
-    // port
-    int port = 0;
-    // host:
-    std::string host;
-    //
+    int port = 0; /**< input port */
+    std::string host; /**< host address */
     bool connected = false;
 
+    /**
+     *
+     * @return double epoch time in ns
+     */
     uint64_t now(){
         return (std::chrono::duration_cast<std::chrono::nanoseconds >(std::chrono::system_clock::now().time_since_epoch())).count();
     }
 
 public:
 
+    ///
+    /// \return
     bool isConnected(){
         return this->connected;
     }
 
+    /**
+     *
+     */
     void waitForConnection(){
         while(!this->isConnected())
             std::this_thread::sleep_for(std::chrono::milliseconds(250));
@@ -46,6 +49,10 @@ public:
         return !this->rxqueue.empty();
     }
 
+    /**
+     *
+     * @return
+     */
     std::string readBlocking(){
         if (!this->isConnected())
             return "";
@@ -66,6 +73,10 @@ public:
         return ret;
     }
 
+    /**
+     *
+     * @return
+     */
     std::string readNonBlocking(){
         if (!this->isConnected())
             return "";
@@ -80,9 +91,21 @@ public:
         return ret;
     }
 
+    /**
+     * Interface for sending a string object as binary array.
+     * @param msg
+     */
     virtual void sendStringAsBinary(const std::string &msg) = 0;
+
+    /**
+     * Interface for sending a string object as UTF-8 encoded array.
+     * @param msg
+     */
     virtual void sendStringAsText(const std::string &msg) = 0;
 
+    /**
+     * Interface for running ping on interface.
+     */
     virtual void ping() = 0;
 
 };
