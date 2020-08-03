@@ -27,6 +27,7 @@ rm -rf webSockets
 
 ## TODO List:
 
+- [ ] can a call back be registered to read?
 - [ ] implement syslog
 - [ ] how to implement clean close within uws app? seems like `h.getDefaultGroup<uWS::SERVER>().close();` is 
 called within an `onMessage` call back under specific conditions...
@@ -35,4 +36,3 @@ called within an `onMessage` call back under specific conditions...
 - [ ] c++ tests
 - [ ] python tests
 - [ ] example cleanup
-gi

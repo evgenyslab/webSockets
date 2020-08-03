@@ -5,6 +5,9 @@
 #include <thread>
 #include <deque>
 #include <iostream>
+#include <syslog.h>
+
+#define MAX_MESSAGE_QUEUE 100
 
 using namespace uWS;
 
@@ -32,20 +35,26 @@ protected:
 
 public:
 
-    ///
-    /// \return
+    /**
+     * Checked whether connection is established
+     * @return bool
+     */
     bool isConnected(){
         return this->connected;
     }
 
     /**
-     *
+     * Waits until connection is established
      */
     void waitForConnection(){
         while(!this->isConnected())
             std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
+    /**
+     * Checks whether messages exist in queue
+     * @return bool
+     */
     bool hasMessages(){
         return !this->rxqueue.empty();
     }

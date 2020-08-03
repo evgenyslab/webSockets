@@ -3,8 +3,6 @@
 
 #include <uWGroup.h>
 
-#define MAX_MESSAGE_QUEUE 100
-
 
 using namespace uWS;
 
@@ -16,10 +14,8 @@ typedef std::map<uWS::WebSocket<uWS::SERVER>*, double> connectionPingTimer;
 class uWServer : public uWGroup{
 private:
 
-    // client lock:
-    pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
-    // connection list:
-    connectionList connections = {};
+    pthread_mutex_t clientLock = PTHREAD_MUTEX_INITIALIZER; /**< client lock*/
+    connectionList connections = {}; /**< list of connected clients*/
     connectionPingTimer pingTimer = {};
 
 
@@ -45,25 +41,23 @@ private:
 //           std::cout << "A client connected" << std::endl;
 //           printf("%s\n",req.headers->value);
            // seems like theres a new pointer per connected client; need to manage this better.
-           pthread_mutex_lock(&this->_lock);
+           pthread_mutex_lock(&this->clientLock);
            this->connections.emplace_back(ws);
            this->connected = true;
-           pthread_mutex_unlock(&this->_lock);
+           pthread_mutex_unlock(&this->clientLock);
                        }
         );
 
         h.onDisconnection([this](uWS::WebSocket<uWS::SERVER>* ws, int code, char *message, size_t length) {
 //            std::cout << "CLIENT CLOSE: " << code << std::endl;
             auto it = findConnection(ws);
-//            std::vector<uWS::WebSocket<uWS::SERVER>*>::iterator it;
-//            it = find (this->connections.begin(), this->connections.end(), ws);
             if (it != connections.end()){
 
-                pthread_mutex_lock(&this->_lock);
+                pthread_mutex_lock(&this->clientLock);
                 this->connections.erase(it);
                 // set connection state based on how many connected clients there are:
                 this->connected = !this->connections.empty();
-                pthread_mutex_unlock(&this->_lock);
+                pthread_mutex_unlock(&this->clientLock);
 //                printf("Client removed!\n");
                 if (this->connections.empty()){
 //                    printf("All Clients disconnected!\n");
@@ -89,6 +83,8 @@ private:
         h.onMessage([this](uWS::WebSocket<uWS::SERVER>* ws, char *message, size_t length, uWS::OpCode opCode){
             // lock queue
             pthread_mutex_lock(&this->_rxmutex);
+            if(this->rxqueue.size() == MAX_MESSAGE_QUEUE)
+                this->rxqueue.pop_front();
             // put message into queue
             this->rxqueue.emplace_back(std::string(message,length));
             pthread_mutex_unlock(&this->_rxmutex);
@@ -109,6 +105,7 @@ public:
         this->port = port;
         this->host = "0.0.0.0";
     };
+
     ~uWServer() = default;
 
     void config(){
@@ -123,17 +120,17 @@ public:
         pthread_kill(this->_tid, 0);
     };
 
-    void sendStringAsBinary(const std::string &msg){
+    void sendStringAsBinary(const std::string &msg) override{
         for (auto c:this->connections)
             c->send(msg.c_str(),msg.size(),OpCode::BINARY);
     }
 
-    void sendStringAsText(const std::string &msg){
+    void sendStringAsText(const std::string &msg) override{
         for (auto c:this->connections)
             c->send(msg.c_str(),msg.size(),OpCode::TEXT);
     }
 
-    void ping(){
+    void ping() override{
         for (auto c:this->connections){
             c->ping("ping-from-server");
             this->pingTimer[c] = now();

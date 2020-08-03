@@ -9,6 +9,7 @@ class uWClient : public uWGroup{
 private:
     // run thread
     pthread_t  _tih;
+    std::string connectionInfo;
     //
     double pingTravelTime = 0;
 
@@ -65,7 +66,7 @@ private:
         });
 
         // try to connect, I suspect might need to wrap this on the whole thread...
-        h.connect(this->host.c_str() + std::to_string(this->port), (void *) 1);
+        h.connect( this->connectionInfo, (void *) 1);
         h.run(); // <- blocking call
 
 
@@ -90,7 +91,8 @@ public:
 
     uWClient(int port){
         this->port = port;
-        this->host = "ws://127.0.0.1:";
+        this->host = "127.0.0.1:";
+        this->connectionInfo = "ws://" + this->host + std::to_string(this->port);
     };
 
     ~uWClient() = default;
