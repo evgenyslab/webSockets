@@ -24,6 +24,7 @@ protected:
     int port = 0; /**< input port */
     std::string host; /**< host address */
     bool connected = false;
+    bool started = false;
 
     /**
      *
@@ -44,12 +45,31 @@ public:
     }
 
     /**
+     * Check whether uWS::Hub listen has been called.
+     * @return
+     */
+    bool isStarted(){
+        return this->started;
+    }
+
+    /**
+     * Waits until hub is started
+     * this is used to ensure uWS::Hub thread allows creation & allocation before any
+     * operation on IO object.
+     */
+    void waitForStart(){
+        while(!this->isStarted())
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    }
+
+    /**
      * Waits until connection is established
      */
     void waitForConnection(){
         while(!this->isConnected())
             std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
+
 
     /**
      * Checks whether messages exist in queue

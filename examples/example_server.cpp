@@ -11,8 +11,6 @@ int main(){
     while (!server.isConnected())
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    std::cout << "Server has connected!\n";
-
     bool exit = false;
     // wait for a moment while uwebsockets starts...
     while(!exit) {

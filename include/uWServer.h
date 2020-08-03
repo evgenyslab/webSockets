@@ -38,45 +38,34 @@ private:
         uWS::Hub h;
 
         h.onConnection([this](uWS::WebSocket<uWS::SERVER>* ws, uWS::HttpRequest req) {
-//           std::cout << "A client connected" << std::endl;
-//           printf("%s\n",req.headers->value);
-           // seems like theres a new pointer per connected client; need to manage this better.
-           pthread_mutex_lock(&this->clientLock);
-           this->connections.emplace_back(ws);
-           this->connected = true;
-           pthread_mutex_unlock(&this->clientLock);
-                       }
+            syslog(LOG_INFO, "uWServer: New client connected");
+            pthread_mutex_lock(&this->clientLock);
+            this->connections.emplace_back(ws);
+            this->connected = true;
+            pthread_mutex_unlock(&this->clientLock);
+            }
         );
 
         h.onDisconnection([this](uWS::WebSocket<uWS::SERVER>* ws, int code, char *message, size_t length) {
-//            std::cout << "CLIENT CLOSE: " << code << std::endl;
+            syslog(LOG_INFO, "uWServer: Client disconnected");
             auto it = findConnection(ws);
             if (it != connections.end()){
-
                 pthread_mutex_lock(&this->clientLock);
                 this->connections.erase(it);
                 // set connection state based on how many connected clients there are:
                 this->connected = !this->connections.empty();
                 pthread_mutex_unlock(&this->clientLock);
-//                printf("Client removed!\n");
-                if (this->connections.empty()){
-//                    printf("All Clients disconnected!\n");
-                }
-            }else{
-                // this should be an error...
-//                printf("client NOT found in array\n");
-            }
+                syslog(LOG_INFO, "uWServer: Disconnected client removed");
+                if (this->connections.empty())
+                    syslog(LOG_INFO, "uWServer: All clients disconnected");
+            }else
+                syslog(LOG_WARNING, "uWServer: Disconnected client not found in client list");
         });
 
-
-        h.onPing([this](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length) {
-//            auto timeOfFlight = (now() - this->pingTimer[ws])/1e6;
-//            std::cout << "Client response: " << timeOfFlight << "ms" << std::endl;
-        });
 
         h.onPong([this](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length) {
             auto timeOfFlight = (now() - this->pingTimer[ws])/1e6;
-            std::cout << "Client response: " << timeOfFlight << "ms" << std::endl;
+            syslog(LOG_INFO, "uWServer: client ping response in %f ms", timeOfFlight);
         });
 
 
@@ -91,8 +80,9 @@ private:
         });
 
         if (h.listen(this->host.c_str(),this->port)) {
-//            printf("Server listening on port: %d\n", this->port);
+            syslog(LOG_INFO, "uWServer: Starting server on %s:%d", this->host.c_str(), this->port);
             // add async to server hub to correctly handle asynchronous sending...
+            this->started = true;
             h.getDefaultGroup<uWS::SERVER>().addAsync();
             h.run();
         }
@@ -114,10 +104,12 @@ public:
     // creates and runs a thread with a hub based on config
     void run() override{
         pthread_create(&this->_tid, nullptr, this->__run__, this);
+        this->waitForStart();
     };
 
     void stop() override{
         pthread_kill(this->_tid, 0);
+        this->started = false;
     };
 
     void sendStringAsBinary(const std::string &msg) override{
