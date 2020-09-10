@@ -96,7 +96,10 @@ public:
         this->host = "0.0.0.0";
     };
 
-    ~uWServer() = default;
+    ~uWServer() {
+        if (this->started)
+            this->stop();
+    };
 
     void config() override{
 

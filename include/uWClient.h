@@ -91,7 +91,10 @@ public:
         this->connectionInfo = "ws://" + this->host + std::to_string(this->port);
     };
 
-    ~uWClient() = default;
+    ~uWClient(){
+        if (this->started)
+            this->stop();
+    };
 
     void config() override{
 
