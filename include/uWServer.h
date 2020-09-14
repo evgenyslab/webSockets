@@ -71,12 +71,7 @@ private:
 
         h.onMessage([this](uWS::WebSocket<uWS::SERVER>* ws, char *message, size_t length, uWS::OpCode opCode){
             // lock queue
-            pthread_mutex_lock(&this->_rxmutex);
-            if(this->rxqueue.size() == MAX_MESSAGE_QUEUE)
-                this->rxqueue.pop_front();
-            // put message into queue
-            this->rxqueue.emplace_back(std::string(message,length));
-            pthread_mutex_unlock(&this->_rxmutex);
+            this->addMessageToQueue(message, length);
         });
 
         if (h.listen(this->host.c_str(),this->port)) {

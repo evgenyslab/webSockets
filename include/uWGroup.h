@@ -70,6 +70,20 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
+    /**
+     * Interface to add message to internal read queue
+     * @param message
+     * @param length
+     */
+    void addMessageToQueue(char *message, size_t length){
+        pthread_mutex_lock(&this->_rxmutex);
+        if(this->rxqueue.size() == MAX_MESSAGE_QUEUE)
+            this->rxqueue.pop_front();
+        // put message into queue
+        this->rxqueue.emplace_back(std::string(message,length));
+        pthread_mutex_unlock(&this->_rxmutex);
+    }
+
 
     /**
      * Checks whether messages exist in queue

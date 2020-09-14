@@ -51,12 +51,7 @@ private:
 
 
             h.onMessage([this](uWS::WebSocket<uWS::CLIENT>* ws, char *message, size_t length, uWS::OpCode opCode){
-                // lock queue
-                pthread_mutex_lock(&this->_rxmutex);
-                // place message:
-                this->rxqueue.emplace_back(std::string(message,length));
-                // unlock queue
-                pthread_mutex_unlock(&this->_rxmutex);
+                this->addMessageToQueue(message, length);
             });
 
             this->started = true;
