@@ -8,7 +8,7 @@
 sudo apt-get install \
     zlib1g-dev \
     libssl-dev \
-    libuv-dev 
+    lib1uv-dev 
 
 ```
 
