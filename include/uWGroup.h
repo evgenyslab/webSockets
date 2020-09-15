@@ -7,7 +7,7 @@
 #include <iostream>
 #include <syslog.h>
 
-#define MAX_MESSAGE_QUEUE 100
+#define MAX_MESSAGE_QUEUE 20
 
 using namespace uWS;
 
@@ -25,6 +25,7 @@ protected:
     std::string host; /**< host address */
     bool connected = false;
     bool started = false;
+    int maxMessageQueue = MAX_MESSAGE_QUEUE;
 
     /**
      *
@@ -77,7 +78,7 @@ public:
      */
     void addMessageToQueue(char *message, size_t length){
         pthread_mutex_lock(&this->_rxmutex);
-        if(this->rxqueue.size() == MAX_MESSAGE_QUEUE)
+        if(this->rxqueue.size() == this->maxMessageQueue)
             this->rxqueue.pop_front();
         // put message into queue
         this->rxqueue.emplace_back(std::string(message,length));
@@ -131,6 +132,28 @@ public:
             ret = this->rxqueue.front();
             this->rxqueue.pop_front();
         }
+        pthread_mutex_unlock(&this->_rxmutex);
+        return ret;
+    }
+
+    /**
+     * Destructively read the queue
+     * @return
+     */
+    std::string readLastNonBlocking(){
+        if (!this->isConnected())
+            return "";
+        std::string ret;
+        // lock queue
+        pthread_mutex_lock(&this->_rxmutex);
+        if (this->rxqueue.empty()){
+            pthread_mutex_unlock(&this->_rxmutex);
+            return "";
+        }
+        while(this->rxqueue.size()>1)
+            this->rxqueue.pop_front();
+        ret = this->rxqueue.front();
+        this->rxqueue.pop_front();
         pthread_mutex_unlock(&this->_rxmutex);
         return ret;
     }

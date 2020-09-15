@@ -5,7 +5,7 @@
 int main(){
 
     std::cout << "SERVER APPLICATION\n\n";
-    uWServer server(13049);
+    uWServer server(13049, 5);
     server.run();
     // wait for connection..
     while (!server.isConnected())
@@ -29,6 +29,10 @@ int main(){
         else if (cmd.substr(0,5)=="bread"){
             std::string ret = server.readBlocking();
             std::cout << "Read from client buffer: " << ret << "\n";
+        }
+        else if (cmd.substr(0,5)=="dread"){
+            std::string ret = server.readLastNonBlocking();
+            std::cout << "Read Last from client buffer: " << ret << "\n";
         }
         else if (cmd.substr(0,4)=="ping"){
             server.ping();

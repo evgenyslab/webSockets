@@ -33,6 +33,10 @@ int main(){
             std::string ret = client.readBlocking();
             std::cout << "Read from client buffer: " << ret << "\n";
         }
+        else if (cmd.substr(0,5)=="dread"){
+            std::string ret = client.readLastNonBlocking();
+            std::cout << "Read Last from client buffer: " << ret << "\n";
+        }
         else if (cmd.substr(0,4)=="ping"){
             client.ping();
         }

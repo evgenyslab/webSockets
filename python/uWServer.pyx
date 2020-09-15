@@ -5,7 +5,7 @@ from libcpp cimport bool
 # mirror class header declarations here
 cdef extern from "uWServer.h":
     cdef cppclass uWServer:
-        uWServer(int) except +
+        uWServer(int, int) except +
 
         void config();
         void run();
@@ -18,13 +18,14 @@ cdef extern from "uWServer.h":
 
         string readBlocking();
         string readNonBlocking();
+        string readLastNonBlocking();
 
         bool isConnected();
         bool hasMessages();
 
 cdef extern from "uWClient.h":
     cdef cppclass uWClient:
-        uWClient(int) except +
+        uWClient(int, int) except +
 
         void config();
         void run();
@@ -37,6 +38,7 @@ cdef extern from "uWClient.h":
 
         string readBlocking();
         string readNonBlocking();
+        string readLastNonBlocking();
 
         bool isConnected();
         bool hasMessages();
@@ -47,8 +49,8 @@ cdef class Server:
     cdef uWServer *thisptr
     # create python interfaces for each C++ function member.
     # CAN add python processing here if need be!
-    def __cinit__(self, port=8890):
-        self.thisptr = new uWServer(port)
+    def __cinit__(self, port=8890, messageQueueLength=10):
+        self.thisptr = new uWServer(port, messageQueueLength)
     def __dealloc__(self):
         del self.thisptr
     def config(self):
@@ -65,6 +67,8 @@ cdef class Server:
         return self.thisptr.readBlocking()
     def readNonBlocking(self):
         return self.thisptr.readNonBlocking()
+    def readLastNonBlocking(self):
+        return self.thisptr.readLastNonBlocking()
     def isConnected(self):
         return self.thisptr.isConnected()
     def hasMessages(self):
@@ -75,8 +79,8 @@ cdef class Client:
     cdef uWClient *thisptr
     # create python interfaces for each C++ function member.
     # CAN add python processing here if need be!
-    def __cinit__(self, port=8890):
-        self.thisptr = new uWClient(port)
+    def __cinit__(self, port=8890, messageQueueLength=10):
+        self.thisptr = new uWClient(port, messageQueueLength)
     def __dealloc__(self):
         del self.thisptr
     def config(self):
@@ -93,6 +97,8 @@ cdef class Client:
         return self.thisptr.readBlocking()
     def readNonBlocking(self):
         return self.thisptr.readNonBlocking()
+    def readLastNonBlocking(self):
+        return self.thisptr.readLastNonBlocking()
     def isConnected(self):
         return self.thisptr.isConnected()
     def hasMessages(self):

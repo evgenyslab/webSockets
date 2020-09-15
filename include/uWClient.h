@@ -80,10 +80,11 @@ private:
 
 public:
 
-    uWClient(int port){
+    uWClient(int port, int messageQueueLength=MAX_MESSAGE_QUEUE){
         this->port = port;
         this->host = "127.0.0.1:";
         this->connectionInfo = "ws://" + this->host + std::to_string(this->port);
+        this->maxMessageQueue=messageQueueLength;
     };
 
     ~uWClient(){

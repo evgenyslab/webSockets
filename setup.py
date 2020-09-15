@@ -30,7 +30,7 @@ extensions = [
 
 setup(
     author="E.Nuger",
-    version="0.2",
+    version="0.3",
     description="Python wrap of an implementation of the  uWebSockets v0.14 server",
     url="https://github.com/evgenyslab/webSockets",
     name="uWebSockets",  # name of package in 'pip freeze'

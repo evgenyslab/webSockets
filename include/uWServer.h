@@ -86,9 +86,10 @@ private:
 
 public:
 
-    uWServer(int port){
+    uWServer(int port, int messageQueueLength=MAX_MESSAGE_QUEUE){
         this->port = port;
         this->host = "0.0.0.0";
+        this->maxMessageQueue = messageQueueLength;
     };
 
     ~uWServer() {
