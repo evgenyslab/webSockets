@@ -72,6 +72,17 @@ public:
     }
 
     /**
+     *
+     * @param port
+     */
+    void setPort(int port){
+        if (this->isConnected() | this->isStarted())
+            syslog(LOG_INFO, "Cannot change port after connection!");
+        else
+            this->port  = port;
+    }
+
+    /**
      * Interface to add message to internal read queue
      * @param message
      * @param length
@@ -166,7 +177,7 @@ public:
     /**
      * Interface for running IO object
      */
-    virtual void run() = 0 ;
+    virtual bool run() = 0 ;
 
     /**
      * Interface for stopping IO object

@@ -3,7 +3,6 @@
 
 #include <uWGroup.h>
 
-
 using namespace uWS;
 
 
@@ -74,7 +73,7 @@ private:
             this->addMessageToQueue(message, length);
         });
 
-        if (h.listen(this->host.c_str(),this->port)) {
+        if (h.listen(this->host.c_str(),this->port, nullptr, uS::ListenOptions::REUSE_PORT)) {
             syslog(LOG_INFO, "uWServer: Starting server on %s:%d", this->host.c_str(), this->port);
             // add async to server hub to correctly handle asynchronous sending...
             this->started = true;
@@ -97,13 +96,38 @@ public:
             this->stop();
     };
 
+    bool checkSocketAvailable(){
+        bool availability = false;
+        // pre-check
+        auto sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        sockaddr_in address{};
+        address.sin_addr.s_addr = INADDR_ANY;
+        address.sin_family = AF_INET;
+        address.sin_port = htons(this->port);
+        // EN --- trying to reuse port cleanly
+        int optval = 1;
+        setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+        if (connect(sock,(struct sockaddr *) &address,sizeof(sockaddr_in)) < 0)
+            availability = true;
+        else
+            availability = false;
+
+        shutdown(sock, 2);
+        return availability;
+    }
+
     void config() override{
 
     };
     // creates and runs a thread with a hub based on config
-    void run() override{
-        pthread_create(&this->_tid, nullptr, this->__run__, this);
-        this->waitForStart();
+    bool run() override{
+
+        if (this->checkSocketAvailable()){
+            pthread_create(&this->_tid, nullptr, this->__run__, this);
+            this->waitForStart();
+            return true;
+        } else
+            return false;
     };
 
     void stop() override{

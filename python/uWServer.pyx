@@ -8,8 +8,9 @@ cdef extern from "uWServer.h":
         uWServer(int, int) except +
 
         void config();
-        void run();
+        bool run();
         void stop();
+        void setPort(int);
 
         void ping();
 
@@ -28,8 +29,9 @@ cdef extern from "uWClient.h":
         uWClient(int, int) except +
 
         void config();
-        void run();
+        bool run();
         void stop();
+        void setPort(int);
 
         void ping();
 
@@ -56,11 +58,16 @@ cdef class Server:
     def config(self):
         self.thisptr.config()
     def run(self):
-        self.thisptr.run()
+        status = self.thisptr.run()
+        if not status:
+            print("Server Error: Socket in use!")
+        return status
     def stop(self):
         self.thisptr.stop()
     def ping(self):
         self.thisptr.ping()
+    def setPort(self, port):
+        self.thisptr.setPort(port)
     def sendStringAsBinary(self, msg):
         self.thisptr.sendStringAsBinary(msg)
     def readBlocking(self):
@@ -86,11 +93,16 @@ cdef class Client:
     def config(self):
         self.thisptr.config()
     def run(self):
-        self.thisptr.run()
+        status = self.thisptr.run()
+        if not status:
+            print("Error in connecting on socket")
+        return status
     def stop(self):
         self.thisptr.stop()
     def ping(self):
         self.thisptr.ping()
+    def setPort(self, port):
+        self.thisptr.setPort(port)
     def sendStringAsBinary(self, msg):
         self.thisptr.sendStringAsBinary(msg)
     def readBlocking(self):

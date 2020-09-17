@@ -97,11 +97,12 @@ public:
     };
 
     // creates and runs a thread with a hub based on config
-    void run() override{
+    bool run() override{
         pthread_create(&this->_tid, nullptr, this->__run__, this);
         // add run monitor...
         pthread_create(&this->_tih, nullptr, this->__monitor__, this);
         this->waitForStart();
+        return true;
     };
 
     void stop() override{
