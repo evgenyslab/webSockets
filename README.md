@@ -27,6 +27,7 @@ rm -rf webSockets
 
 ## TODO List:
 
+- [ ] Look into using detached threads instead of joined threads
 - [ ] can a call back be registered to read?
 - [ ] implement syslog
 - [ ] how to implement clean close within uws app? seems like `h.getDefaultGroup<uWS::SERVER>().close();` is 
